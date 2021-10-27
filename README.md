@@ -1,2 +1,3 @@
-# Coisas
-coisas que eu to fazendo e não sei o porque você quer vê-las
+# Projeto minhas tarefas
+Site que busca salvar todas as tarefas de determinada pessoa e seus prazos.
+
