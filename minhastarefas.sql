@@ -23,10 +23,12 @@ nome_tarefa VARCHAR(50) NOT NULL,
 descricao_tarefa TEXT NULL,
 arquivo_tarefa VARCHAR(60) NOT NULL,
 dataEntrega_tarefa DATE NOT NULL,
-urgencia_tarefa varchar(60) NOT NULL,
+urgencia_tarefa VARCHAR(60) NOT NULL,
 fk_usuario INT NOT NULL,
 fk_materias INT NOT NULL
 );
 
 ALTER TABLE Tb_tarefas ADD CONSTRAINT fk_usuario FOREIGN KEY (fk_usuario) REFERENCES Tb_usuario (id_usuario);
 ALTER TABLE Tb_tarefas ADD CONSTRAINT fk_materias FOREIGN KEY (fk_materias) REFERENCES Tb_materias (id_materia);
+
+INSERT INTO tb_materias(nome_materia) VALUES ("Matemática"),("Químicca"),("Física");
