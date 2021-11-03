@@ -1,70 +1,79 @@
 <?php
-include("../conexao.php");
-session_start();
-if(isset($_POST['cadastrart'])){
-    $nome = $_POST['nomet'];
-    $descricao = $_POST['desct'];
-    $diretorio = "../arquivos/";
-    $arquivo = $_FILES['tarefa']['name'];
-    $data = $_POST['datat'];
-    echo $data;
-    $urgencia = $_POST['urgencia'];
-    $materia = $_POST['materia'];
-    $dir = $diretorio.md5($arquivo);    
-    $sql = $conexao->prepare("SELECT id_usuario FROM tb_usuario WHERE email_usuario = :email AND senha_usuario = :senha");
-    $sql->bindValue(':email',$_SESSION['email'], PDO::PARAM_STR);
-    $sql->bindValue(':senha',$_SESSION['senha'], PDO::PARAM_STR);
-    $sql->execute();
-    $pesquisa = $sql->fetch(PDO::PARAM_STR);
-    $id_usu = $pesquisa['id_usuario'];
-    //print_r($pesquisa);
-    //print_r($dir);
-    $sql2 = $conexao->prepare("SELECT id_materia FROM tb_materias WHERE nome_materia = :materia");
-    $sql2->bindValue(':materia',$materia, PDO::PARAM_STR);
-    $sql2->execute();
-    $pesquisa2 = $sql2->fetch(PDO::PARAM_STR);
-    $id_materia = $pesquisa2['id_materia'];
-    //print_r($pesquisa2);
-    try{
-        $sql3 = $conexao->prepare("INSERT INTO tb_tarefas(
-        nome_tarefa, 
-        descricao_tarefa, 
-        arquivo_tarefa, 
-        dataEntrega_tarefa, 
-        urgencia_tarefa, 
-        fk_usuario, 
-        fk_materias) VALUES
-        (
-        :nome, 
-        :descricao, 
-        :arquivo, 
-        :dataEntrega, 
-        :urgencia, 
-        :idUsu, 
-        :idMat)");
-        $sql3->bindValue(':nome',$nome, PDO::PARAM_STR);
-        $sql3->bindValue(':descricao',$descricao, PDO::PARAM_STR);
-        $sql3->bindValue(':arquivo', $dir, PDO::PARAM_STR);
-        $sql3->bindValue(':dataEntrega',$data, PDO::PARAM_STR);
-        $sql3->bindValue(':urgencia',$urgencia, PDO::PARAM_STR);
-        $sql3->bindValue(':idUsu',$id_usu, PDO::PARAM_STR);
-        $sql3->bindValue(':idMat',$id_materia, PDO::PARAM_STR);
-        $sql3->execute();
-        $pesquisa3 = $sql3->fetch(PDO::PARAM_STR);
-        if(empty($pesquisa3)){
-            echo "";
+    include("../conexao.php");
+    session_start();
+    if(empty($_SESSION['nome'])){
+        unset($_SESSION);
+        header('Location: login.php');
+    }else if(isset($_SESSION['sair'])){
+        if($_SESSION['sair'] == "sair"){
+            unset($_SESSION);
+            header('Location: login.php');
         }else{
-            echo "deu bom";
+            if(isset($_POST['cadastrart'])){
+                $nome = $_POST['nomet'];
+                $descricao = $_POST['desct'];
+                $diretorio = "../arquivos/";
+                $arquivo = $_FILES['tarefa']['name'];
+                $extensao= strtolower(substr($arquivo, -4));
+                $data = $_POST['datat'];
+                $urgencia = $_POST['urgencia'];
+                if($urgencia != "sim"){
+                    $urgencia="não";
+                }
+                $materia = $_POST['materia'];
+                $dir = $diretorio.md5(time()).$extensao;    
+                $sql = $conexao->prepare("SELECT id_usuario FROM tb_usuario WHERE email_usuario = :email AND senha_usuario = :senha");
+                $sql->bindValue(':email',$_SESSION['email'], PDO::PARAM_STR);
+                $sql->bindValue(':senha',$_SESSION['senha'], PDO::PARAM_STR);
+                $sql->execute();
+                $pesquisa = $sql->fetch(PDO::PARAM_STR);
+                $id_usu = $pesquisa['id_usuario'];
+                //print_r($pesquisa);
+                //print_r($dir);
+                $sql2 = $conexao->prepare("SELECT id_materia FROM tb_materias WHERE nome_materia = :materia");
+                $sql2->bindValue(':materia',$materia, PDO::PARAM_STR);
+                $sql2->execute();
+                $pesquisa2 = $sql2->fetch(PDO::PARAM_STR);
+                $id_materia = $pesquisa2['id_materia'];
+                //print_r($pesquisa2);
+                try{
+                    $sql3 = $conexao->prepare("INSERT INTO tb_tarefas(
+                    nome_tarefa, 
+                    descricao_tarefa, 
+                    arquivo_tarefa, 
+                    dataEntrega_tarefa, 
+                    urgencia_tarefa, 
+                    fk_usuario, 
+                    fk_materias) VALUES
+                    (
+                    :nome, 
+                    :descricao, 
+                    :arquivo, 
+                    :dataEntrega, 
+                    :urgencia, 
+                    :idUsu, 
+                    :idMat)");
+                    $sql3->bindValue(':nome',$nome, PDO::PARAM_STR);
+                    $sql3->bindValue(':descricao',$descricao, PDO::PARAM_STR);
+                    $sql3->bindValue(':arquivo', $dir, PDO::PARAM_STR);
+                    $sql3->bindValue(':dataEntrega',$data, PDO::PARAM_STR);
+                    $sql3->bindValue(':urgencia',$urgencia, PDO::PARAM_STR);
+                    $sql3->bindValue(':idUsu',$id_usu, PDO::PARAM_STR);
+                    $sql3->bindValue(':idMat',$id_materia, PDO::PARAM_STR);
+                    $sql3->execute();
+                    $pesquisa3 = $sql3->fetch(PDO::PARAM_STR);
+                    if(empty($pesquisa3)){
+                        move_uploaded_file($_FILES['tarefa']['tmp_name'],$dir);
+                        header('Location: ../paginas/minhas_tarefas.php');
+                        
+                    }
+                }catch(PDOException $e){
+                    
+                }
+                
+            }
         }
-    }catch(PDOException $e){
-        
     }
-    
-}else{
-    echo "algo deu de errado";
-}
-
-//move_uploaded_file($_FILES['tarefa']['tmp_name'],$diretorio.md5($arquivo));
 ?>
 
 <!DOCTYPE html>
@@ -128,7 +137,7 @@ if(isset($_POST['cadastrart'])){
                     <input class="cem" type="date" name="datat" id="datat" placeholder="Data de entrega" required><br><br>
                 </div>
                 <div class="cem">
-                    <input type="checkbox" name="urgencia" id="sim"> Este trabalho é urgente<br><br>
+                    <input type="checkbox" name="urgencia" value="sim"> Este trabalho é urgente<br><br>
                 </div>
                 <div>
                     <select class="cem" name="materia" id="materia" required>
@@ -137,7 +146,6 @@ if(isset($_POST['cadastrart'])){
                             $sql = $conexao->prepare("select * from tb_materias");
                             $sql->execute();
                             while($materias = $sql->fetch(PDO::FETCH_ASSOC)){
-                                print_r($materias);
                                 echo '<option value="'.$materias['nome_materia'].'">'.$materias['nome_materia'].'</option>';
                             }
                         ?>

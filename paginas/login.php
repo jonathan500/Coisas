@@ -51,6 +51,8 @@
                 <input type="password" name="senha" id="senha" placeholder="Senha" required><br><br>
             </div>
                 <button type="submit" name="entrar" value="entrar">Entrar</button>
+                <br>
+                <br>
         </form>
         <a href="cadastro.php"><button name="cadastrar" value="cadastrar">Cadastrar-se</button><br></a>
     </div>
